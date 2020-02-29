@@ -1,4 +1,4 @@
-const { open, read, write } = require('fs');
+const { open, read, write, fsync, close } = require('fs');
 const WRITE_LENGTH = 8;
 
 /**
@@ -16,7 +16,11 @@ function copy(url, target, callback) {
                     if (bytesRead > 0) {
                         write(writeFd, buf, 0, bytesRead, null, _copy)
                     } else {
-                        callback();
+                        fsync(writeFd, function () {
+                            close(readFd, function () { });
+                            close(writeFd, function () { });
+                            callback();
+                        })
                     }
                 })
             }()
